@@ -231,45 +231,101 @@ try {
 let text = "";
 let finalMessage: any = null;
 
+// Helper function to extract text from various content formats
+function extractTextFromContent(content: any): string {
+  if (!content) return "";
+  
+  // String content
+  if (typeof content === "string") return content;
+  
+  // Array of content parts
+  if (Array.isArray(content)) {
+    // Look for output_text type
+    for (const part of content) {
+      if (part.type === "output_text" && part.text) {
+        return part.text;
+      }
+      if (part.type === "text" && part.text) {
+        return part.text;
+      }
+    }
+    // Join all text parts
+    return content.map((p: any) => p.text || "").join("");
+  }
+  
+  return "";
+}
+
+// Try multiple response formats
 if (Array.isArray(json?.response)) {
-  // Agentic search returns a list of events/messages
-  // We need to find the final assistant message
+  // Format 1: json.response array with message objects
   finalMessage = json.response.find(
     (item: any) => item.type === "message" && item.role === "assistant"
   );
-  
-  if (finalMessage && Array.isArray(finalMessage.content)) {
-    // Content is an array of parts (e.g. text, annotations)
-    const textPart = finalMessage.content.find((p: any) => p.type === "output_text");
-    if (textPart) {
-      text = textPart.text;
+  if (finalMessage) {
+    text = extractTextFromContent(finalMessage.content);
+  }
+} else if (Array.isArray(json?.output)) {
+  // Format 2: json.output array (newer API format)
+  // Look for the last message in the output
+  for (let i = json.output.length - 1; i >= 0; i--) {
+    const item = json.output[i];
+    if (item.type === "message" && item.role === "assistant") {
+      finalMessage = item;
+      text = extractTextFromContent(item.content);
+      break;
     }
-  } else if (finalMessage && typeof finalMessage.content === "string") {
-    text = finalMessage.content;
+    // Also check for tool responses that might contain text
+    if (item.type === "custom_tool_call" && item.status === "completed") {
+      // Tool results might be in the output
+    }
+  }
+  // If no message found, check for text field directly in output
+  if (!text) {
+    const lastOutput = json.output[json.output.length - 1];
+    if (lastOutput?.text) {
+      text = lastOutput.text;
+    }
   }
 } else if (json?.choices?.[0]?.message?.content) {
+  // Format 3: Standard OpenAI-style response
   text = json.choices[0].message.content;
 } else if (json?.result) {
+  // Format 4: Simple result field
   text = json.result;
+}
+
+// Final fallback: check for text directly in json
+if (!text && json?.text) {
+  text = json.text;
 }
 
 let citations: string[] | null = null;
 
-// Try to get citations from the final message annotations if available
-if (finalMessage?.content) {
-  // Check for annotations in content parts
-  const textPart = Array.isArray(finalMessage.content) 
-    ? finalMessage.content.find((p: any) => p.type === "output_text")
-    : null;
-    
-  if (textPart?.annotations) {
-    const urls = textPart.annotations
-      .filter((a: any) => a.type === "url_citation" && a.url)
-      .map((a: any) => a.url);
-    if (urls.length > 0) {
-      citations = Array.from(new Set(urls));
+// Helper function to extract citations from content
+function extractCitationsFromContent(content: any): string[] | null {
+  if (!content) return null;
+  
+  const urls: string[] = [];
+  
+  if (Array.isArray(content)) {
+    for (const part of content) {
+      if (part.annotations && Array.isArray(part.annotations)) {
+        for (const ann of part.annotations) {
+          if (ann.type === "url_citation" && ann.url) {
+            urls.push(ann.url);
+          }
+        }
+      }
     }
   }
+  
+  return urls.length > 0 ? Array.from(new Set(urls)) : null;
+}
+
+// Try to get citations from the final message annotations if available
+if (finalMessage?.content) {
+  citations = extractCitationsFromContent(finalMessage.content);
 }
 
 // Fallback: Check top-level citations
