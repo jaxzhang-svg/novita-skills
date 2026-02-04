@@ -1,43 +1,34 @@
 #!/usr/bin/env bun
 /**
- * Grok 4 via OpenRouter with Live Search for X/Twitter
+ * Grok 4 via xAI Official API with Agentic Search
  *
  * Env:
- *   OPENROUTER_API_KEY (required)
- *   GROK_MODEL (optional, defaults to "x-ai/grok-4")
+ *   GROK_API_KEY (required)
+ *   GROK_MODEL (optional, defaults to "grok-4-1-fast" as per docs)
  *
  * Usage examples:
  *   bun scripts/grok.ts --q "what are people saying about ERC-7702 wallets on X?"
- *   bun scripts/grok.ts --q "tweets from @elonmusk this week" --include "@elonmusk" "@OpenAI" --from 2025-11-01 --to 2025-11-07 --mode on --max 15
+ *   bun scripts/grok.ts --q "tweets from @elonmusk" --include "@elonmusk" --img --video
  *
  * Exit codes:
  *   0 - success
  *   2 - usage/validation error
  *   3 - network/timeout error
  *   4 - JSON parse error
- *
- * Notes:
- * - Live Search is configured via extra_body.search_parameters.
- * - X-specific filters: included_x_handles / excluded_x_handles, post_favorite_count, post_view_count.
- * - from_date / to_date and max_search_results are top-level under search_parameters.
  */
-
-type Mode = "on" | "off" | "auto";
 
 interface CLI {
   q?: string;
-  mode?: Mode;
   include: string[];
   exclude: string[];
   from?: string; // YYYY-MM-DD
   to?: string;   // YYYY-MM-DD
-  max?: number;  // 1..50 (xAI default 20)
-  minFaves?: number;
-  minViews?: number;
+  img: boolean;
+  video: boolean;
 }
 
 function parseArgs(argv: string[]): CLI {
-  const a: CLI = { include: [], exclude: [] };
+  const a: CLI = { include: [], exclude: [], img: false, video: false };
 
   const collect = (start: number) => {
     const values: string[] = [];
@@ -52,15 +43,6 @@ function parseArgs(argv: string[]): CLI {
       case "--q":
         a.q = argv[++i];
         break;
-      case "--mode": {
-        const m = argv[++i];
-        if (m !== "on" && m !== "off" && m !== "auto") {
-          console.error('Invalid --mode. Use: on | off | auto');
-          process.exit(2);
-        }
-        a.mode = m as Mode;
-        break;
-      }
       case "--include": {
         const { values, next } = collect(i + 1);
         a.include.push(...values);
@@ -79,35 +61,17 @@ function parseArgs(argv: string[]): CLI {
       case "--to":
         a.to = argv[++i];
         break;
-      case "--max": {
-        const n = Number(argv[++i]);
-        if (!Number.isFinite(n)) {
-          console.error("Invalid --max (must be a number)");
-          process.exit(2);
-        }
-        a.max = n;
+      case "--img":
+      case "--image":
+      case "--images":
+        a.img = true;
         break;
-      }
-      case "--min-faves": {
-        const n = Number(argv[++i]);
-        if (!Number.isInteger(n) || n < 0) {
-          console.error("Invalid --min-faves (must be >= 0 integer)");
-          process.exit(2);
-        }
-        a.minFaves = n;
+      case "--video":
+      case "--videos":
+        a.video = true;
         break;
-      }
-      case "--min-views": {
-        const n = Number(argv[++i]);
-        if (!Number.isInteger(n) || n < 0) {
-          console.error("Invalid --min-views (must be >= 0 integer)");
-          process.exit(2);
-        }
-        a.minViews = n;
-        break;
-      }
       default:
-        // ignore unknown tokens so quoted multi-values work smoothly
+        // ignore unknown tokens
         break;
     }
   }
@@ -153,7 +117,7 @@ async function fetchWithRetry(
   opts: { attempts?: number; timeoutMs?: number } = {}
 ) {
   const attempts = opts.attempts ?? 3;
-  const timeoutMs = opts.timeoutMs ?? 30_000;
+  const timeoutMs = opts.timeoutMs ?? 60_000;
 
   let lastError: unknown;
   for (let attempt = 1; attempt <= attempts; attempt++) {
@@ -167,7 +131,7 @@ async function fetchWithRetry(
       const status = res.status;
       const retryAfter = res.headers.get("retry-after");
       const text = await res.text();
-      const reqId = res.headers.get("x-request-id") || res.headers.get("x-openrouter-id") || "n/a";
+      const reqId = res.headers.get("x-request-id") || "n/a";
 
       const retriable = [408, 429, 500, 502, 503, 504].includes(status);
       if (!retriable || attempt === attempts) {
@@ -191,70 +155,66 @@ async function fetchWithRetry(
 
 const args = parseArgs(process.argv.slice(2));
 if (!args.q) {
-  console.error('Usage: bun scripts/grok.ts --q "<query>" [--mode on|auto|off] [--include @a ... | --exclude @x ...] [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--min-faves N] [--min-views N] [--max N]');
+  console.error('Usage: bun scripts/grok.ts --q "<query>" [--include @a ... | --exclude @x ...] [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--img] [--video]');
   process.exit(2);
 }
 if (args.include.length && args.exclude.length) {
   console.error("You cannot set both --include and --exclude (xAI constraint).");
   process.exit(2);
 }
-const apiKey = process.env.OPENROUTER_API_KEY;
+const apiKey = process.env.GROK_API_KEY;
 if (!apiKey) {
   console.error([
-    "Missing env OPENROUTER_API_KEY.",
-    "Set it in your shell and re-run. Examples:",
-    '  export OPENROUTER_API_KEY="sk-or-..."',
-    '  OPENROUTER_API_KEY="sk-or-..." bun scripts/grok.ts --q "..."',
-    "Tip: add the export to your shell profile (~/.zshrc or ~/.bashrc) to persist.",
+    "Missing env GROK_API_KEY.",
+    "Set it in your shell and re-run. Example:",
+    '  export GROK_API_KEY="xai-..."',
   ].join("\n"));
   process.exit(2);
 }
 
 const include = normalizeHandles(args.include);
 const exclude = normalizeHandles(args.exclude);
-const maxRaw = args.max;
-const max_search_results = Number.isFinite(maxRaw) ? Math.min(50, Math.max(1, Number(maxRaw))) : 12;
 
-const xSource: Record<string, unknown> = { type: "x" };
-if (include.length) xSource["included_x_handles"] = include;
-if (exclude.length) xSource["excluded_x_handles"] = exclude;
-if (args.minFaves != null) xSource["post_favorite_count"] = args.minFaves;
-if (args.minViews != null) xSource["post_view_count"] = args.minViews;
-
-const searchParameters: Record<string, unknown> = {
-  mode: args.mode || "auto",
-  return_citations: true,
-  max_search_results,
-  from_date: ensureISO(args.from),
-  to_date: ensureISO(args.to),
-  sources: [xSource],
+// Construct Tools Parameter
+const xSearchTool: Record<string, any> = {
+  type: "x_search",
 };
 
-const model = process.env.GROK_MODEL ?? "x-ai/grok-4";
+// Add filters to the tool object
+if (include.length) xSearchTool["allowed_x_handles"] = include;
+if (exclude.length) xSearchTool["excluded_x_handles"] = exclude;
+
+const fromDate = ensureISO(args.from);
+if (fromDate) xSearchTool["from_date"] = fromDate;
+
+const toDate = ensureISO(args.to);
+if (toDate) xSearchTool["to_date"] = toDate;
+
+if (args.img) xSearchTool["enable_image_understanding"] = true;
+if (args.video) xSearchTool["enable_video_understanding"] = true;
+
+const model = process.env.GROK_MODEL ?? "grok-4-1-fast"; // Default for agentic search
+
+const url = "https://api.x.ai/v1/responses";
 
 const body = {
   model,
-  messages: [
+  input: [
     {
       role: "system",
-      content:
-        "You are Grok 4 answering with X/Twitter Live Search. Summarize concisely, and include tweet URLs as citations. Prefer bullets.",
+      content: "You are Grok, an AI assistant powered by xAI. You have access to X (Twitter) search tools. Use them to answer the user's question with up-to-date information. Cite your sources."
     },
     { role: "user", content: String(args.q) },
   ],
-  extra_body: { search_parameters: searchParameters },
-  temperature: 0.2,
-  max_tokens: 1200,
+  tools: [xSearchTool],
   stream: false,
 };
 
-const res = await fetchWithRetry("https://openrouter.ai/api/v1/chat/completions", {
+const res = await fetchWithRetry(url, {
   method: "POST",
   headers: {
     Authorization: `Bearer ${apiKey}`,
     "Content-Type": "application/json",
-    "X-Title": "grok-skill",
-    "HTTP-Referer": "https://github.com",
   },
   body: JSON.stringify(body),
 });
@@ -267,22 +227,74 @@ try {
   process.exit(4);
 }
 
-const text =
-  json?.choices?.[0]?.message?.content ??
-  json?.choices?.[0]?.delta?.content ??
-  "";
+// Inspect response for content
+let text = "";
+let finalMessage: any = null;
 
-let citations =
-  json?.citations ??
-  json?.choices?.[0]?.message?.citations ??
-  json?.extra?.citations ??
-  null;
+if (Array.isArray(json?.response)) {
+  // Agentic search returns a list of events/messages
+  // We need to find the final assistant message
+  finalMessage = json.response.find(
+    (item: any) => item.type === "message" && item.role === "assistant"
+  );
+  
+  if (finalMessage && Array.isArray(finalMessage.content)) {
+    // Content is an array of parts (e.g. text, annotations)
+    const textPart = finalMessage.content.find((p: any) => p.type === "output_text");
+    if (textPart) {
+      text = textPart.text;
+    }
+  } else if (finalMessage && typeof finalMessage.content === "string") {
+    text = finalMessage.content;
+  }
+} else if (json?.choices?.[0]?.message?.content) {
+  text = json.choices[0].message.content;
+} else if (json?.result) {
+  text = json.result;
+}
 
-// Fallback: extract X/Twitter URLs from text when citations are absent
-if (!citations) {
+let citations: string[] | null = null;
+
+// Try to get citations from the final message annotations if available
+if (finalMessage?.content) {
+  // Check for annotations in content parts
+  const textPart = Array.isArray(finalMessage.content) 
+    ? finalMessage.content.find((p: any) => p.type === "output_text")
+    : null;
+    
+  if (textPart?.annotations) {
+    const urls = textPart.annotations
+      .filter((a: any) => a.type === "url_citation" && a.url)
+      .map((a: any) => a.url);
+    if (urls.length > 0) {
+      citations = Array.from(new Set(urls));
+    }
+  }
+}
+
+// Fallback: Check top-level citations
+if (!citations && json?.citations) {
+  citations = json.citations;
+}
+
+// Fallback: extract X/Twitter URLs from text
+if (!citations && text) {
   const urls = Array.from(String(text).matchAll(/https?:\/\/[^\s)]+/g)).map((m) => m[0]);
   const xUrls = urls.filter((u) => /(^https?:\/\/(x\.com|twitter\.com)\/)/i.test(u));
-  citations = xUrls.length ? Array.from(new Set(xUrls)) : null;
+  if (xUrls.length) citations = Array.from(new Set(xUrls));
+}
+
+// Fallback: extract X/Twitter URLs from text when citations are absent
+if (text) {
+  const urls = Array.from(String(text).matchAll(/https?:\/\/[^\s)]+/g)).map((m) => m[0]);
+  const xUrls = urls.filter((u) => /(^https?:\/\/(x\.com|twitter\.com)\/)/i.test(u));
+  if (xUrls.length && !citations) citations = Array.from(new Set(xUrls));
+} else {
+  // DEBUG: If text is empty, return the raw JSON structure to help debug
+  console.error("DEBUG: Empty response text. Raw JSON keys:", Object.keys(json));
+  if (json.error) console.error("DEBUG: API Error:", json.error);
+  // Assign raw JSON snippet to summary so user can see it
+  text = "Error: Could not extract summary from response. Raw response: " + JSON.stringify(json).slice(0, 500) + "...";
 }
 
 const out = {
