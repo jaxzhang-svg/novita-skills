@@ -1,5 +1,5 @@
 ---
-name: novita-context
+name: novita-docs
 description: Comprehensive reference for Novita AI platform covering all products (Model APIs, GPU Instance, Serverless GPUs, Agent Sandbox), features, pricing, integrations, documentation, and design system. Use when user asks about Novita AI, needs information about any Novita product, requires API guidance, pricing details, integration help, design system questions (colors, typography, buttons, navigation, icons, logo), or wants to understand Novita's capabilities and services.
 ---
 
