@@ -1,6 +1,6 @@
 # Contributing Guide
 
-Welcome to contribute to the Novita Skills repository!
+The complete contribution guide is now integrated into the **get-started** skill for easier access.
 
 ## Quick Start
 

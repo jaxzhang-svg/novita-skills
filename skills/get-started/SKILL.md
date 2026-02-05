@@ -1,11 +1,11 @@
 ---
-name: novita-skills-installer
-description: Novita Skills installer and navigator. Use when user wants to know what skills are available in the novita-skills repository, needs help installing team skills, asks about team capabilities, or wants recommendations for which skills to install. Provides an overview of all team skills and helps users discover and install the right skills for their needs.
+name: get-started
+description: Get started with Novita Skills. Use when user wants to know what skills are available, needs help installing team skills, wants to contribute new skills, asks about team capabilities, or needs recommendations for which skills to install. Provides an overview of all team skills, contribution guidelines, and helps users discover and install the right skills.
 ---
 
-# Novita Skills Installer
+# Get Started with Novita Skills
 
-Team skills installer and navigator to help you quickly discover, browse, and install collaboratively built skills.
+Your complete guide to discovering, installing, and contributing to team skills.
 
 ## Overview
 
@@ -218,48 +218,22 @@ curl --version 2>/dev/null | head -n 1 || echo "curl not found"
 
 **If all checks pass, you're ready to start installing and using skills!** 🎉
 
-## Recommended Anthropic Official Skills
+## Recommended Community Skills
 
-In addition to internal team skills, we highly recommend installing high-quality skills officially provided by Anthropic:
+Looking for more skills to enhance your workflow? We've curated a comprehensive list of high-quality skills from Anthropic and other providers.
 
-### 🎨 Design-Related
-- **frontend-design** - Frontend design systems and UI component development
-- **canvas-design** - Canvas design
-- **theme-factory** - Theme design and customization
-- **brand-guidelines** - Brand guidelines and visual standards
-- **algorithmic-art** - Algorithmic art and generative design
+**See**: [Recommended Skills Guide](references/recommended-skills.md)
 
-### 🛠️ Development Tools
-- **skill-creator** - Create new skills
-- **mcp-builder** - Model Context Protocol builder
-- **webapp-testing** - Web application testing
-- **web-artifacts-builder** - Web component builder
+**Quick picks**:
+- **Design & Frontend**: frontend-design, canvas-design, brand-guidelines
+- **Development Tools**: skill-creator, mcp-builder, webapp-testing
+- **Document Processing**: pdf, pptx, xlsx, docx
+- **And many more...**
 
-### 📄 Document Processing
-- **pdf** - PDF document processing
-- **pptx** - PowerPoint presentations
-- **xlsx** - Excel spreadsheets
-- **docx** - Word documents
-- **doc-coauthoring** - Collaborative document writing
-
-### 💬 Other Utilities
-- **internal-comms** - Internal communications
-- **slack-gif-creator** - Slack GIF creation
-- **template-skill** - Skill templates
-
-**Installation**:
 ```bash
-# Install a single skill
-npx skills add anthropics/skills --skill frontend-design
-
-# Install multiple skills
-npx skills add anthropics/skills --skill pdf pptx xlsx docx
-
-# Install all Anthropic skills (may be many)
-npx skills add anthropics/skills --skill '*'
+# Install any Anthropic skill
+npx skills add anthropics/skills --skill <skill-name>
 ```
-
-**Tip**: We recommend installing selectively based on actual needs to avoid installing too many skills that may affect performance.
 
 ## Installation Guide
 
@@ -284,7 +258,7 @@ A: Choose based on your work:
 - Social media management → `x-crisis-monitor`
 - Frontend design development → Anthropic's `frontend-design`
 - Document processing → Anthropic's `pdf`, `docx`, `xlsx`, `pptx`
-- Not sure? Install this installer skill and ask the AI agent directly
+- Not sure? Install the get-started skill and ask the AI agent directly
 
 ### Q: Do skills affect performance?
 A: No. Skills are only loaded when needed and don't continuously occupy resources. However, we recommend keeping installed skills under 50.
@@ -316,3 +290,35 @@ A: Skills are structured knowledge optimized for AI agents, containing clear use
 ---
 
 Start using team skills to boost your development efficiency! 🚀
+
+---
+
+## Contributing to Team Skills
+
+Want to share your domain knowledge with the team? We welcome your contributions!
+
+**See**: [Complete Contributing Guide](references/CONTRIBUTING.md)
+
+### Quick Start
+
+1. **Create a skill** using Anthropic's skill-creator:
+   ```bash
+   npx skills add https://github.com/anthropics/skills --skill skill-creator
+   ```
+
+2. **Add your skill** to the `skills/` directory
+
+3. **Submit a PR** with your changes
+
+For detailed requirements, submission process, and best practices, refer to the [Contributing Guide](references/CONTRIBUTING.md).
+
+### Get Help
+
+- 💬 Open an issue in the repository
+- 📖 Refer to existing skills as examples
+- 🤝 Contact team members
+- 🎯 Ask the AI agent: "How do I contribute a new skill?"
+
+---
+
+**Thank you for contributing!** 🎉
