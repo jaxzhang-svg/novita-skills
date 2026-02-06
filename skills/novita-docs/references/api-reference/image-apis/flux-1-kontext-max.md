@@ -1,0 +1,214 @@
+---
+url: "https://novita.ai/docs/api-reference/model-apis-flux-1-kontext-max"
+title: "FLUX.1 Kontext Max - Documentation"
+---
+
+[Skip to main content](https://novita.ai/docs/api-reference/model-apis-flux-1-kontext-max#content-area)
+
+[Documentation home page![light logo](https://mintcdn.com/novitaai/AUzGFUdz_qhrXjaJ/logo/light.svg?fit=max&auto=format&n=AUzGFUdz_qhrXjaJ&q=85&s=707bd547016bea7e2b3889bfb61ab32b)![dark logo](https://mintcdn.com/novitaai/AUzGFUdz_qhrXjaJ/logo/dark.svg?fit=max&auto=format&n=AUzGFUdz_qhrXjaJ&q=85&s=2824cc8e8f475a64b5284120039f77ce)](https://novita.ai/)
+
+Search...
+
+Ctrl K
+
+Search...
+
+Navigation
+
+Image Generator
+
+FLUX.1 Kontext Max
+
+[Guides](https://novita.ai/docs/guides/introduction) [API Reference](https://novita.ai/docs/api-reference/basic-authentication) [Changelog](https://novita.ai/docs/changelog/19-01-26)
+
+FLUX.1 Kontext Max
+
+cURL
+
+Copy
+
+```
+curl --request POST \
+  --url https://api.novita.ai/v3/async/flux-1-kontext-max \
+  --header 'Authorization: <authorization>' \
+  --header 'Content-Type: <content-type>' \
+  --data '
+{
+  "prompt": "<string>",
+  "images": [\
+    "<string>"\
+  ],
+  "seed": 123,
+  "guidance_scale": 123,
+  "safety_tolerance": "<string>",
+  "aspect_ratio": "<string>"
+}
+'
+```
+
+200
+
+Copy
+
+```
+{
+  "task_id": "<string>"
+}
+```
+
+POST
+
+https://api.novita.ai
+
+/
+
+v3
+
+/
+
+async
+
+/
+
+flux-1-kontext-max
+
+Try it
+
+FLUX.1 Kontext Max
+
+cURL
+
+Copy
+
+```
+curl --request POST \
+  --url https://api.novita.ai/v3/async/flux-1-kontext-max \
+  --header 'Authorization: <authorization>' \
+  --header 'Content-Type: <content-type>' \
+  --data '
+{
+  "prompt": "<string>",
+  "images": [\
+    "<string>"\
+  ],
+  "seed": 123,
+  "guidance_scale": 123,
+  "safety_tolerance": "<string>",
+  "aspect_ratio": "<string>"
+}
+'
+```
+
+200
+
+Copy
+
+```
+{
+  "task_id": "<string>"
+}
+```
+
+FLUX.1 Kontext \[max\] is a model with greatly improved prompt adherence and typography generation meet premium consistency for editing without compromise on speed.
+
+## [​](https://novita.ai/docs/api-reference/model-apis-flux-1-kontext-max\#request-headers)  Request Headers
+
+[​](https://novita.ai/docs/api-reference/model-apis-flux-1-kontext-max#param-content-type)
+
+Content-Type
+
+string
+
+required
+
+Enum: `application/json`
+
+[​](https://novita.ai/docs/api-reference/model-apis-flux-1-kontext-max#param-authorization)
+
+Authorization
+
+string
+
+required
+
+Bearer authentication format, for example: Bearer {{API Key}}.
+
+## [​](https://novita.ai/docs/api-reference/model-apis-flux-1-kontext-max\#request-body)  Request Body
+
+[​](https://novita.ai/docs/api-reference/model-apis-flux-1-kontext-max#param-prompt)
+
+prompt
+
+string
+
+required
+
+The prompt to generate an image from.
+
+[​](https://novita.ai/docs/api-reference/model-apis-flux-1-kontext-max#param-images)
+
+images
+
+string\[\]
+
+The images to generate an image from. Limit to a maximum of 4 images.
+
+[​](https://novita.ai/docs/api-reference/model-apis-flux-1-kontext-max#param-seed)
+
+seed
+
+integer
+
+The random seed to use for the generation. Range \[-1 ~ 2147483647\].
+
+[​](https://novita.ai/docs/api-reference/model-apis-flux-1-kontext-max#param-guidance-scale)
+
+guidance\_scale
+
+number
+
+The guidance scale to use for the generation. Default is 3.5. Range \[1.0 ~ 20.0\].
+
+[​](https://novita.ai/docs/api-reference/model-apis-flux-1-kontext-max#param-safety-tolerance)
+
+safety\_tolerance
+
+string
+
+The safety tolerance level for the generated image. 1 being the most strict and 5 being the most permissive. Default is 2.
+
+Enum: `1`, `2`, `3`, `4`, `5`
+
+[​](https://novita.ai/docs/api-reference/model-apis-flux-1-kontext-max#param-aspect-ratio)
+
+aspect\_ratio
+
+string
+
+The aspect ratio of the generated image.
+
+Enum: `21:9`, `16:9`, `4:3`, `3:2`, `1:1`, `2:3`, `3:4`, `9:16`, `9:21`
+
+## [​](https://novita.ai/docs/api-reference/model-apis-flux-1-kontext-max\#response)  Response
+
+[​](https://novita.ai/docs/api-reference/model-apis-flux-1-kontext-max#param-task-id)
+
+task\_id
+
+string
+
+required
+
+Use the task\_id to request the [Task Result API](https://novita.ai/docs/api-reference/model-apis-task-result) to retrieve the generated outputs.
+
+Was this page helpful?
+
+YesNo
+
+[FLUX.1 Kontext Pro](https://novita.ai/docs/api-reference/model-apis-flux-1-kontext-pro) [Seedream 3.0 Text to Image](https://novita.ai/docs/api-reference/model-apis-seedream-3-0-t2i)
+
+Ctrl+I
+
+Assistant
+
+Responses are generated using AI and may contain mistakes.
