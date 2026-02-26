@@ -2,8 +2,8 @@
  * Configuration management for TwitterAPI Skill
  */
 
-import { readFile, writeFile, mkdir } from "fs/promises";
-import { existsSync } from "fs";
+import { writeFile, mkdir } from "fs/promises";
+import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { config as dotenvConfig } from "dotenv";
 
@@ -17,7 +17,7 @@ interface ConfigData {
 }
 
 /**
- * Configuration manager supporting env vars and YAML-like config file
+ * Configuration manager supporting env vars and JSON config file
  */
 export class Config {
   /** Default paths */
@@ -40,7 +40,7 @@ export class Config {
     this.ensureConfigDirectory();
 
     // Load from file or env vars
-    this._config = this.loadConfig();
+    this._config = this.loadConfigSync();
   }
 
   private ensureConfigDirectory(): void {
@@ -51,14 +51,14 @@ export class Config {
     }
   }
 
-  private loadConfig(): ConfigData {
+  private loadConfigSync(): ConfigData {
     const config: ConfigData = {};
 
     // Try to load from config file (JSON for simplicity)
     if (existsSync(Config.DEFAULT_CONFIG_FILE)) {
       try {
-        const fileContent = readFile(Config.DEFAULT_CONFIG_FILE, "utf-8");
-        const fileConfig = JSON.parse(fileContent.toString()) as ConfigData;
+        const fileContent = readFileSync(Config.DEFAULT_CONFIG_FILE, "utf-8");
+        const fileConfig = JSON.parse(fileContent) as ConfigData;
         Object.assign(config, fileConfig);
       } catch {
         // Ignore file read/parse errors

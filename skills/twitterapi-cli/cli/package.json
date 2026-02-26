@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "bun run src/cli.ts",
-    "build": "bun build src/cli.ts --outfile dist/cli --target bun --compile && chmod +x dist/cli",
+    "build": "bun build src/cli.ts --outfile ../scripts/twitterapi --target bun --compile && chmod +x ../scripts/twitterapi",
     "build:js": "tsc",
     "watch": "bun --watch src/cli.ts",
     "lint": "eslint src",

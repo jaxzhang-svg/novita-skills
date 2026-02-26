@@ -184,7 +184,8 @@ async function userFollowing(
       count: Math.min(options.limit ?? 20, 200),
     });
 
-    let users = (response.data ?? response.users ?? response) as unknown;
+    // API returns: { followings: [...], has_next_page, next_cursor, ... }
+    let users = (response.followings ?? response.data ?? response.users ?? response) as unknown;
     if (!Array.isArray(users)) {
       users = users ? [users] : [];
     }

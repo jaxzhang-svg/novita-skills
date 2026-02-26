@@ -7,6 +7,28 @@ description: Twitter data retrieval CLI tool. Use when user requests Twitter dat
 
 A token-efficient CLI tool for retrieving Twitter data via TwitterAPI.io. Filters API responses to reduce token usage by 70-90% compared to full responses.
 
+## Prerequisites
+
+- **Bun** runtime must be installed on the system
+- **API Key** from TwitterAPI.io
+
+## Setup & Build
+
+**IMPORTANT: This CLI must be built before first use.**
+
+```bash
+# Navigate to the CLI directory
+cd skills/twitterapi-cli/cli
+
+# Install dependencies
+bun install
+
+# Build the CLI
+bun run build
+```
+
+The build process creates a standalone binary at `scripts/twitterapi` (one level above the cli directory).
+
 ## Quick Start
 
 ```bash
@@ -105,6 +127,8 @@ Or create `~/.twitterapi/config.json`:
 }
 ```
 
+**Note:** The config file path is `~/.twitterapi/config.json` (automatically created if it doesn't exist).
+
 ## Usage Patterns
 
 ### User Profile Analysis
@@ -171,8 +195,25 @@ Common errors:
 
 ## Technical Notes
 
-- **Executable:** `scripts/twitterapi` - Standalone Bun binary
-- **Runtime:** No external dependencies (bundled)
+- **Source:** `cli/src/` - TypeScript source code
+- **Build:** `cd cli && bun run build` - Creates standalone binary at `scripts/twitterapi`
+- **Development Mode:** `cd cli && bun run src/cli.ts <command>` - Run directly without building
+- **Production:** `./scripts/twitterapi <command>` - Use built binary
+- **Re-build Required:** After any source code changes, run `bun run build` again (from cli directory)
 - **Output:** JSON only (designed for agent/AI consumption)
 - **Token Savings:** 70-90% reduction with field filtering
 - **Rate Limits:** Handled automatically (retry after delay)
+
+## Execution Methods
+
+### Method 1: Using built binary (recommended for agents)
+```bash
+cd skills/twitterapi-cli
+./scripts/twitterapi user info elonmusk --compact
+```
+
+### Method 2: Development mode (for testing changes)
+```bash
+cd skills/twitterapi-cli/cli
+bun run src/cli.ts user info elonmusk --compact
+```

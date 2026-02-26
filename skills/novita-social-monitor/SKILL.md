@@ -15,13 +15,7 @@ AI industry intelligence gathering through sequential X/Twitter account review.
 twitterapi user following Jax_Zhang_4R --limit 200
 ```
 
-### Get Account Info
-
-```bash
-twitterapi user info <account> --compact
-```
-
-Analyze description/bio to determine category.
+**Response includes:** `id`, `screen_name`, `name`, `description`, `followers_count`, `verified` for each account. No additional API calls needed for account info.
 
 ### Fetch Tweets (Time-Filtered)
 
@@ -52,18 +46,11 @@ twitterapi user tweets <account> --limit 3 --compact
 twitterapi tweet search "@novita_labs" --limit 50 --compact
 ```
 
-### Get Account Info
-
-```bash
-twitterapi user info <account> --compact
-```
-
 ## Processing Workflow
 
-For each account:
+For each account in the following list:
 
-1. **Get account info** - Fetch description to identify category
-2. **Classify by description** - Analyze bio/description to determine:
+1. **Classify by description** - Use `description` field from following list response to determine category:
    - **LLM Competitors**: LLM providers, model hosting, inference APIs
    - **GPU Competitors**: GPU clouds, compute infrastructure
    - **Partners**: Integration partners, ecosystem collaborators
@@ -71,8 +58,10 @@ For each account:
    - **Chinese Open Source**: Chinese AI model providers
    - **AI KOLs**: Industry thought leaders, researchers
    - **Uncategorized**: General AI industry relevance
-3. **Fetch tweets** - Use time-filtered command above
-4. **Analyze by category**:
+
+   **Note:** The `following` command already returns `description`, `name`, `followers_count`, and `verified` status - no need to fetch account info separately.
+2. **Fetch tweets** - Use time-filtered command above
+3. **Analyze by category**:
    - Competitors: Product launches, pricing, partnerships
    - Partners: Integration updates
    - Ecosystem: Platform changes
