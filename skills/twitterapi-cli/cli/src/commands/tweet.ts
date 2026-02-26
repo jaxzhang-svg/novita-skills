@@ -30,8 +30,14 @@ async function tweetSearch(
 
     const response = await client.get("/twitter/tweet/advanced_search", params);
 
-    // Extract tweets from response
-    let tweets: unknown = response.data ?? response.tweets ?? response;
+    // TwitterAPI.io returns: { data: { tweets: [...] } }
+    // Extract tweets from the response
+    let tweets: unknown = response.data;
+    if (tweets && typeof tweets === 'object' && 'tweets' in tweets) {
+      tweets = (tweets as Record<string, unknown>).tweets;
+    }
+    tweets = tweets ?? response.tweets ?? response.data ?? response;
+
     if (!Array.isArray(tweets)) {
       tweets = tweets ? [tweets] : [];
     }

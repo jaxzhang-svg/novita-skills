@@ -33,13 +33,13 @@ export const EXTENDED_USER_FIELDS = [
 export const COMPACT_TWEET_FIELDS = [
   "id",
   "text",
-  "created_at",
-  "author_id",
-  "conversation_id",
-  "public_metrics.like_count",
-  "public_metrics.retweet_count",
-  "public_metrics.reply_count",
-  "public_metrics.quote_count",
+  "createdAt",
+  "url",
+  "retweetCount",
+  "replyCount",
+  "likeCount",
+  "quoteCount",
+  "viewCount",
 ] as const;
 
 /** Extended tweet fields */

@@ -78,7 +78,14 @@ async function userTweets(
 
     const response = await client.get("/twitter/user/last_tweets", params);
 
-    let tweets = (response.data ?? response.tweets ?? response) as unknown;
+    // TwitterAPI.io returns: { data: { tweets: [...] } }
+    // Extract tweets from the response
+    let tweets: unknown = response.data;
+    if (tweets && typeof tweets === 'object' && 'tweets' in tweets) {
+      tweets = (tweets as Record<string, unknown>).tweets;
+    }
+    tweets = tweets ?? response.tweets ?? response.data ?? response;
+
     if (!Array.isArray(tweets)) {
       tweets = tweets ? [tweets] : [];
     }
